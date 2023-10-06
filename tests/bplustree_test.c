@@ -86,6 +86,7 @@ static void bplus_tree_insert_delete_test(struct bplus_tree *tree)
                 bplus_tree_put(tree, i, i);
         }
         bplus_tree_dump(tree);
+        bplus_tree_dump(tree);
 
         fprintf(stderr, "\n-- Delete 1 to %d, dump:\n", max_key);
         for (i = 1; i <= max_key; i++) {

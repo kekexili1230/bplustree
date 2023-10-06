@@ -23,7 +23,13 @@ static inline int is_leaf(struct bplus_node *node)
 {
         return node->type == BPLUS_TREE_LEAF;
 }
-
+/**
+ * @description: 返回正数，则找到key；返回负数，
+ * @param {key_t} *arr
+ * @param {int} len
+ * @param {key_t} target
+ * @return {*}
+ */
 static key_t key_binary_search(key_t *arr, int len, key_t target)
 {
         int low = -1;
@@ -33,10 +39,12 @@ static key_t key_binary_search(key_t *arr, int len, key_t target)
                 if (target > arr[mid]) {
                         low = mid;
                 } else {
+                        // arr[high] >= target
                         high = mid;
                 }
         }
         if (high >= len || arr[high] != target) {
+                // todo why -high - 1, 而不是-high
                 return -high - 1;
         } else {
                 return high;
@@ -114,6 +122,7 @@ static int parent_node_build(struct bplus_tree *tree, struct bplus_node *left,
                 parent->sub_ptr[0]->parent_key_idx = -1;
                 parent->sub_ptr[1] = right;
                 parent->sub_ptr[1]->parent = parent;
+                // todo为什么left->parent_key_idx = -1 and right->parent_key_idx = 0
                 parent->sub_ptr[1]->parent_key_idx = 0;
                 parent->children = 2;
                 /* update root */
@@ -318,7 +327,10 @@ static int non_leaf_insert(struct bplus_tree *tree, struct bplus_non_leaf *node,
 
         return 0;
 }
-
+/**
+ * @description: 将叶子节点leaf进行左分裂，左分裂部分存放到left节点，并在左分裂节点中insert索引处插入key-data键值对
+ * @return {*}
+ */
 static void leaf_split_left(struct bplus_leaf *leaf, struct bplus_leaf *left,
                             key_t key, int data, int insert)
 {
@@ -382,7 +394,14 @@ static void leaf_split_right(struct bplus_leaf *leaf, struct bplus_leaf *right,
         /* left leaf number */
         leaf->entries = split;
 }
-
+/**
+ * @description: 在leaf节点insert索引处，插入key-data键值对
+ * @param {bplus_leaf} *leaf
+ * @param {key_t} key
+ * @param {int} data
+ * @param {int} insert
+ * @return {*}
+ */
 static void leaf_simple_insert(struct bplus_leaf *leaf, key_t key, int data, int insert)
 {
         int i;
@@ -408,6 +427,7 @@ static int leaf_insert(struct bplus_tree *tree, struct bplus_leaf *leaf, key_t k
         /* node full */
         if (leaf->entries == tree->entries) {
                 /* split = [m/2] */
+                // 分裂子节点
                 int split = (tree->entries + 1) / 2;
                 /* splited sibling node */
                 struct bplus_leaf *sibling = leaf_new();
@@ -939,6 +959,45 @@ static void key_print(struct bplus_node *node)
                 }
         }
         printf("\n");
+}
+void print_node(struct bplus_node *node, int level);
+
+void bplus_tree_print(struct bplus_tree *tree) {
+        if(tree != NULL) {
+                printf("-------------------------- preorder traversal bplus tree --------------------------\n");
+                print_node(tree->root, 0);
+                printf("-----------------------------------------------------------------------------------\n");
+        }
+}
+
+
+void print_node(struct bplus_node *node, int level) {
+        if(node != NULL) {
+                int i;
+                for(i = 0; i < level; i++) {
+                                printf("%-8s", "+-------");
+                        }
+
+                        if(is_leaf(node)) {
+                                struct bplus_leaf *leaf = (struct bplus_leaf *)node;
+                                printf("leaf:");
+                                for (i = 0; i < leaf->entries; i++) {
+                                        printf(" %d", leaf->key[i]);
+                                }  
+                                printf("\n");
+                                return;
+                        } else {
+                                struct bplus_non_leaf *non_leaf = (struct bplus_non_leaf *)node;
+                                printf("node:");
+                                for (i = 0; i < non_leaf->children - 1; i++) {
+                                        printf(" %d", non_leaf->key[i]);
+                                }
+                                printf("\n");
+                                for(int i = 0; i < non_leaf->children; i++) {
+                                        print_node(non_leaf->sub_ptr[i], level + 1);
+                                }
+                        }
+        }  
 }
 
 void bplus_tree_dump(struct bplus_tree *tree)

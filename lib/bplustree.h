@@ -145,11 +145,11 @@ struct bplus_leaf {
         int data[BPLUS_MAX_ENTRIES];
 
 };
-/** b plus tree structure */
+/** b plus tree structure，所有的B+树相关指标放在此处 */
 struct bplus_tree {
-/**  The actual number of children for a node, referred to here as order */
+/**  The actual number of children for a node, referred to here as order，非叶子节点最大子节点数 */
         int order;
-/** number of actual key-value pairs in tree */
+/** number of actual key-value pairs in tree ，叶子节点最大数据项数*/
         int entries;
 /** height of the tree */
         int level;
@@ -157,6 +157,8 @@ struct bplus_tree {
 /** double linked list to search leaf node*/
         struct list_head list[BPLUS_MAX_LEVEL];
 };
+
+void bplus_tree_print(struct bplus_tree *tree);
  /** print the whole tree for debugging
    *  
    * @param tree pointer to bplus tree
